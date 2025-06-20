@@ -149,7 +149,7 @@
             padding: 15px;
             text-align: left;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 12px;
         }
         
         .calculator-table td {
@@ -181,6 +181,7 @@
             border-radius: 5px;
             font-weight: bold;
             color: #27ae60;
+            text-align: center;
         }
         
         .priority-high {
@@ -196,6 +197,24 @@
         .priority-low {
             background: #e8f5e8;
             color: #2e7d32;
+        }
+        
+        .calculate-btn {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            margin: 20px 0;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
         
         .summary-cards {
@@ -249,6 +268,10 @@
             text-align: center;
             color: white;
             font-weight: bold;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .do-first {
@@ -334,6 +357,34 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
+        
+        .calculation-results {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #27ae60;
+        }
+        
+        .add-row-btn {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        .remove-row-btn {
+            background: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -375,31 +426,32 @@
             <div class="step">
                 <div class="step-number">2</div>
                 <div>
-                    <strong>Review automated calculations</strong><br>
-                    The tool will calculate potential revenue and priority scores automatically
+                    <strong>Click "Calculate Revenue Opportunity"</strong><br>
+                    The tool will calculate potential revenue, priority scores, and update all summaries
                 </div>
             </div>
 
             <div class="step">
                 <div class="step-number">3</div>
                 <div>
-                    <strong>Analyze the Summary Dashboard</strong><br>
-                    See your total opportunity and which leaks to prioritize first
+                    <strong>Review the Summary Dashboard</strong><br>
+                    See your total opportunity, priority matrix, and which leaks to tackle first
                 </div>
             </div>
 
             <div class="step">
                 <div class="step-number">4</div>
                 <div>
-                    <strong>Follow the Action Plan</strong><br>
-                    Use our phased implementation roadmap to capture the revenue
+                    <strong>Follow the Dynamic Action Plan</strong><br>
+                    Get customized recommendations based on your specific revenue leaks
                 </div>
             </div>
 
             <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-top: 25px; border-left: 5px solid #ffc107;">
                 <h3>⚠️ Important Notes:</h3>
                 <ul style="margin-left: 20px; margin-top: 10px;">
-                    <li>All data remains private - nothing is sent externally</li>
+                    <li>All calculations happen in real-time in your browser</li>
+                    <li>No data is sent to external servers - complete privacy</li>
                     <li>Conversion rates are estimates - adjust based on your customer base</li>
                     <li>Consider customer relationship impact before enforcing limits</li>
                     <li>Start with high-impact, low-risk opportunities first</li>
@@ -419,66 +471,78 @@
                         <th>Feature/Usage Limit</th>
                         <th>Plan Limit</th>
                         <th>Customers Exceeding</th>
-                        <th>Monthly Upgrade Cost</th>
+                        <th>Monthly Upgrade Cost ($)</th>
                         <th>Conversion Rate</th>
                         <th>Priority Score</th>
-                        <th>Monthly Revenue</th>
-                        <th>Annual Revenue</th>
+                        <th>Monthly Revenue ($)</th>
+                        <th>Annual Revenue ($)</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="calculatorRows">
-                    <tr>
-                        <td><input type="text" class="input-field" value="Storage Limit (GB)" onchange="updateCalculations()"></td>
-                        <td><input type="text" class="input-field" value="2 GB" onchange="updateCalculations()"></td>
-                        <td><input type="number" class="input-field" value="30" onchange="updateCalculations()"></td>
-                        <td><input type="number" class="input-field" value="350" onchange="updateCalculations()"></td>
+                    <tr id="row-0">
+                        <td><input type="text" class="input-field" value="Storage Limit (GB)" data-field="feature"></td>
+                        <td><input type="text" class="input-field" value="2 GB" data-field="limit"></td>
+                        <td><input type="number" class="input-field" value="30" data-field="customers"></td>
+                        <td><input type="number" class="input-field" value="350" data-field="cost"></td>
                         <td>
-                            <select class="input-field" onchange="updateCalculations()">
+                            <select class="input-field" data-field="conversion">
                                 <option value="0.3">30% (Conservative)</option>
                                 <option value="0.5" selected>50% (Realistic)</option>
                                 <option value="0.7">70% (Optimistic)</option>
                             </select>
                         </td>
-                        <td><div class="calculated-field priority-medium">Medium</div></td>
-                        <td><div class="calculated-field">$5,250</div></td>
-                        <td><div class="calculated-field">$63,000</div></td>
+                        <td><div class="calculated-field" data-result="priority">-</div></td>
+                        <td><div class="calculated-field" data-result="monthly">$0</div></td>
+                        <td><div class="calculated-field" data-result="annual">$0</div></td>
+                        <td><button class="remove-row-btn" onclick="removeRow(0)">Remove</button></td>
                     </tr>
-                    <tr>
-                        <td><input type="text" class="input-field" value="API Limit (Transactions)" onchange="updateCalculations()"></td>
-                        <td><input type="text" class="input-field" value="100 Transactions" onchange="updateCalculations()"></td>
-                        <td><input type="number" class="input-field" value="30" onchange="updateCalculations()"></td>
-                        <td><input type="number" class="input-field" value="1000" onchange="updateCalculations()"></td>
+                    <tr id="row-1">
+                        <td><input type="text" class="input-field" value="API Limit (Transactions)" data-field="feature"></td>
+                        <td><input type="text" class="input-field" value="100 Transactions" data-field="limit"></td>
+                        <td><input type="number" class="input-field" value="30" data-field="customers"></td>
+                        <td><input type="number" class="input-field" value="1000" data-field="cost"></td>
                         <td>
-                            <select class="input-field" onchange="updateCalculations()">
+                            <select class="input-field" data-field="conversion">
                                 <option value="0.3">30% (Conservative)</option>
                                 <option value="0.5" selected>50% (Realistic)</option>
                                 <option value="0.7">70% (Optimistic)</option>
                             </select>
                         </td>
-                        <td><div class="calculated-field priority-high">High</div></td>
-                        <td><div class="calculated-field">$15,000</div></td>
-                        <td><div class="calculated-field">$180,000</div></td>
+                        <td><div class="calculated-field" data-result="priority">-</div></td>
+                        <td><div class="calculated-field" data-result="monthly">$0</div></td>
+                        <td><div class="calculated-field" data-result="annual">$0</div></td>
+                        <td><button class="remove-row-btn" onclick="removeRow(1)">Remove</button></td>
                     </tr>
-                    <tr>
-                        <td><input type="text" class="input-field" value="Analytics Feature" onchange="updateCalculations()"></td>
-                        <td><input type="text" class="input-field" value="Off/On" onchange="updateCalculations()"></td>
-                        <td><input type="number" class="input-field" value="50" onchange="updateCalculations()"></td>
-                        <td><input type="number" class="input-field" value="950" onchange="updateCalculations()"></td>
+                    <tr id="row-2">
+                        <td><input type="text" class="input-field" value="Analytics Feature" data-field="feature"></td>
+                        <td><input type="text" class="input-field" value="Off/On" data-field="limit"></td>
+                        <td><input type="number" class="input-field" value="50" data-field="customers"></td>
+                        <td><input type="number" class="input-field" value="950" data-field="cost"></td>
                         <td>
-                            <select class="input-field" onchange="updateCalculations()">
+                            <select class="input-field" data-field="conversion">
                                 <option value="0.3">30% (Conservative)</option>
                                 <option value="0.5" selected>50% (Realistic)</option>
                                 <option value="0.7">70% (Optimistic)</option>
                             </select>
                         </td>
-                        <td><div class="calculated-field priority-high">High</div></td>
-                        <td><div class="calculated-field">$23,750</div></td>
-                        <td><div class="calculated-field">$285,000</div></td>
+                        <td><div class="calculated-field" data-result="priority">-</div></td>
+                        <td><div class="calculated-field" data-result="monthly">$0</div></td>
+                        <td><div class="calculated-field" data-result="annual">$0</div></td>
+                        <td><button class="remove-row-btn" onclick="removeRow(2)">Remove</button></td>
                     </tr>
                 </tbody>
             </table>
 
-            <button onclick="addRow()" style="background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 5px; margin-bottom: 20px;">+ Add Another Leak</button>
+            <div style="margin-bottom: 20px;">
+                <button class="add-row-btn" onclick="addRow()">+ Add Another Leak</button>
+                <button class="calculate-btn" onclick="calculateAll()">🧮 Calculate Revenue Opportunity</button>
+            </div>
+
+            <div id="calculationResults" class="calculation-results" style="display: none;">
+                <h3>📊 Calculation Results</h3>
+                <div id="resultsContent"></div>
+            </div>
         </div>
 
         <div id="summary" class="tab-content">
@@ -487,18 +551,18 @@
             <div class="summary-cards">
                 <div class="summary-card">
                     <h3>Total Annual Opportunity</h3>
-                    <div class="value" id="totalAnnual">$528,000</div>
-                    <div>Based on 50% conversion rate</div>
+                    <div class="value" id="totalAnnual">$0</div>
+                    <div id="conversionNote">Click Calculate to see results</div>
                 </div>
                 <div class="summary-card">
                     <h3>High Priority Leaks</h3>
-                    <div class="value" id="highPriority">2</div>
+                    <div class="value" id="highPriority">0</div>
                     <div>Requiring immediate attention</div>
                 </div>
                 <div class="summary-card">
-                    <h3>Implementation Timeline</h3>
-                    <div class="value">6</div>
-                    <div>Months to full deployment</div>
+                    <h3>Total Monthly Revenue</h3>
+                    <div class="value" id="totalMonthly">$0</div>
+                    <div>Recurring monthly opportunity</div>
                 </div>
             </div>
 
@@ -506,77 +570,42 @@
                 <h3>📈 Priority Matrix</h3>
                 <p style="margin-bottom: 20px; color: #666;">Focus your efforts on the right opportunities:</p>
                 <div class="priority-matrix">
-                    <div class="matrix-quadrant do-first">
+                    <div class="matrix-quadrant do-first" id="doFirst">
                         <strong>DO FIRST</strong><br>
                         High Impact + Easy Implementation<br>
-                        Analytics Feature, API Limits
+                        <div id="doFirstItems">Run calculation to see items</div>
                     </div>
-                    <div class="matrix-quadrant plan-carefully">
+                    <div class="matrix-quadrant plan-carefully" id="planCarefully">
                         <strong>PLAN CAREFULLY</strong><br>
                         High Impact + Hard Implementation<br>
-                        Complex integrations
+                        <div id="planCarefullyItems">Run calculation to see items</div>
                     </div>
-                    <div class="matrix-quadrant quick-wins">
+                    <div class="matrix-quadrant quick-wins" id="quickWins">
                         <strong>QUICK WINS</strong><br>
                         Low Impact + Easy Implementation<br>
-                        Storage Limits
+                        <div id="quickWinsItems">Run calculation to see items</div>
                     </div>
-                    <div class="matrix-quadrant avoid">
+                    <div class="matrix-quadrant avoid" id="avoid">
                         <strong>AVOID</strong><br>
                         Low Impact + Hard Implementation<br>
-                        Not worth the effort
+                        <div id="avoidItems">Run calculation to see items</div>
                     </div>
                 </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>💰 Revenue Breakdown by Feature</h3>
+                <div id="revenueBreakdown">Run calculation to see detailed breakdown</div>
             </div>
         </div>
 
         <div id="action-plan" class="tab-content">
-            <h2>📝 Implementation Action Plan</h2>
+            <h2>📝 Dynamic Implementation Action Plan</h2>
             
-            <div class="action-plan">
-                <div class="phase">
-                    <h4>🚀 Phase 1 (Month 1-2): Quick Wins</h4>
-                    <ul class="checklist">
-                        <li>Audit current entitlement enforcement in your system</li>
-                        <li>Identify customers currently exceeding limits</li>
-                        <li>Update billing system to handle overage charges</li>
-                        <li>Create customer communication templates</li>
-                        <li>Implement storage limit enforcement (easiest start)</li>
-                    </ul>
-                </div>
-
-                <div class="phase">
-                    <h4>⚡ Phase 2 (Month 3-4): Medium Priority Features</h4>
-                    <ul class="checklist">
-                        <li>Roll out analytics feature restrictions</li>
-                        <li>Launch customer education campaign about value</li>
-                        <li>Monitor conversion rates and adjust messaging</li>
-                        <li>Grandfather existing high-value customers</li>
-                        <li>Create upgrade path presentations for sales team</li>
-                    </ul>
-                </div>
-
-                <div class="phase">
-                    <h4>🎯 Phase 3 (Month 5-6): Complex Implementation</h4>
-                    <ul class="checklist">
-                        <li>Implement API limit enforcement with technical team</li>
-                        <li>Update infrastructure to handle usage monitoring</li>
-                        <li>Full rollout of all entitlement changes</li>
-                        <li>Establish ongoing monitoring and optimization</li>
-                        <li>Document lessons learned for future pricing changes</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div style="background: #e8f5e8; padding: 20px; border-radius: 10px; border-left: 5px solid #27ae60;">
-                <h3>💡 Pro Tips for Success:</h3>
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                    <li><strong>Start Small:</strong> Begin with one feature to test customer response</li>
-                    <li><strong>Communicate Value:</strong> Focus on what customers gain, not what they lose</li>
-                    <li><strong>Monitor Closely:</strong> Track conversion rates and churn during rollout</li>
-                    <li><strong>Be Flexible:</strong> Adjust approach based on customer feedback</li>
-                    <li><strong>Celebrate Wins:</strong> Share success metrics with your team</li>
-                </ul>
+            <div id="dynamicActionPlan">
+                <p style="text-align: center; color: #666; padding: 40px;">
+                    Click "Calculate Revenue Opportunity" in the Calculator tab to generate your customized action plan based on your specific revenue leaks.
+                </p>
             </div>
         </div>
 
@@ -592,52 +621,327 @@
     </div>
 
     <script>
+        let rowCounter = 3;
+        let calculationData = [];
+
         function showTab(tabName) {
-            // Hide all tab contents
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(content => content.classList.remove('active'));
             
-            // Remove active class from all tabs
             const tabs = document.querySelectorAll('.tab');
             tabs.forEach(tab => tab.classList.remove('active'));
             
-            // Show selected tab content
             document.getElementById(tabName).classList.add('active');
-            
-            // Add active class to clicked tab
             event.target.classList.add('active');
-        }
-
-        function updateCalculations() {
-            // This would contain the calculation logic
-            // For demo purposes, showing static values
-            console.log('Calculations updated');
         }
 
         function addRow() {
             const tbody = document.getElementById('calculatorRows');
             const newRow = tbody.insertRow();
+            newRow.id = `row-${rowCounter}`;
             newRow.innerHTML = `
-                <td><input type="text" class="input-field" placeholder="Feature Name" onchange="updateCalculations()"></td>
-                <td><input type="text" class="input-field" placeholder="Current Limit" onchange="updateCalculations()"></td>
-                <td><input type="number" class="input-field" placeholder="0" onchange="updateCalculations()"></td>
-                <td><input type="number" class="input-field" placeholder="0" onchange="updateCalculations()"></td>
+                <td><input type="text" class="input-field" placeholder="Feature Name" data-field="feature"></td>
+                <td><input type="text" class="input-field" placeholder="Current Limit" data-field="limit"></td>
+                <td><input type="number" class="input-field" placeholder="0" data-field="customers"></td>
+                <td><input type="number" class="input-field" placeholder="0" data-field="cost"></td>
                 <td>
-                    <select class="input-field" onchange="updateCalculations()">
+                    <select class="input-field" data-field="conversion">
                         <option value="0.3">30% (Conservative)</option>
                         <option value="0.5" selected>50% (Realistic)</option>
                         <option value="0.7">70% (Optimistic)</option>
                     </select>
                 </td>
-                <td><div class="calculated-field priority-low">Low</div></td>
-                <td><div class="calculated-field">$0</div></td>
-                <td><div class="calculated-field">$0</div></td>
+                <td><div class="calculated-field" data-result="priority">-</div></td>
+                <td><div class="calculated-field" data-result="monthly">$0</div></td>
+                <td><div class="calculated-field" data-result="annual">$0</div></td>
+                <td><button class="remove-row-btn" onclick="removeRow(${rowCounter})">Remove</button></td>
             `;
+            rowCounter++;
+        }
+
+        function removeRow(rowId) {
+            const row = document.getElementById(`row-${rowId}`);
+            if (row) {
+                row.remove();
+                calculateAll(); // Recalculate after removing row
+            }
+        }
+
+        function calculateAll() {
+            calculationData = [];
+            const rows = document.querySelectorAll('#calculatorRows tr');
+            
+            rows.forEach((row, index) => {
+                const feature = row.querySelector('[data-field="feature"]').value;
+                const limit = row.querySelector('[data-field="limit"]').value;
+                const customers = parseInt(row.querySelector('[data-field="customers"]').value) || 0;
+                const cost = parseFloat(row.querySelector('[data-field="cost"]').value) || 0;
+                const conversion = parseFloat(row.querySelector('[data-field="conversion"]').value) || 0.5;
+                
+                if (feature && customers > 0 && cost > 0) {
+                    const monthlyRevenue = customers * cost * conversion;
+                    const annualRevenue = monthlyRevenue * 12;
+                    
+                    // Calculate priority score (simplified algorithm)
+                    let priorityScore = 0;
+                    if (annualRevenue > 100000) priorityScore += 3;
+                    else if (annualRevenue > 50000) priorityScore += 2;
+                    else priorityScore += 1;
+                    
+                    if (customers > 40) priorityScore += 2;
+                    else if (customers > 20) priorityScore += 1;
+                    
+                    let priority = 'Low';
+                    let priorityClass = 'priority-low';
+                    if (priorityScore >= 4) {
+                        priority = 'High';
+                        priorityClass = 'priority-high';
+                    } else if (priorityScore >= 3) {
+                        priority = 'Medium';
+                        priorityClass = 'priority-medium';
+                    }
+                    
+                    // Update the row with calculated values
+                    row.querySelector('[data-result="priority"]').textContent = priority;
+                    row.querySelector('[data-result="priority"]').className = `calculated-field ${priorityClass}`;
+                    row.querySelector('[data-result="monthly"]').textContent = `$${monthlyRevenue.toLocaleString()}`;
+                    row.querySelector('[data-result="annual"]').textContent = `$${annualRevenue.toLocaleString()}`;
+                    
+                    calculationData.push({
+                        feature,
+                        limit,
+                        customers,
+                        cost,
+                        conversion,
+                        monthlyRevenue,
+                        annualRevenue,
+                        priority,
+                        priorityScore
+                    });
+                }
+            });
+            
+            updateSummary();
+            updateActionPlan();
+            showCalculationResults();
+        }
+
+        function updateSummary() {
+            if (calculationData.length === 0) return;
+            
+            const totalAnnual = calculationData.reduce((sum, item) => sum + item.annualRevenue, 0);
+            const totalMonthly = calculationData.reduce((sum, item) => sum + item.monthlyRevenue, 0);
+            const highPriorityCount = calculationData.filter(item => item.priority === 'High').length;
+            
+            document.getElementById('totalAnnual').textContent = `$${totalAnnual.toLocaleString()}`;
+            document.getElementById('totalMonthly').textContent = `$${totalMonthly.toLocaleString()}`;
+            document.getElementById('highPriority').textContent = highPriorityCount;
+            document.getElementById('conversionNote').textContent = 'Based on current conversion rates';
+            
+            // Update priority matrix
+            const doFirst = calculationData.filter(item => item.priority === 'High' && item.annualRevenue > 100000);
+            const planCarefully = calculationData.filter(item => item.priority === 'High' && item.annualRevenue <= 100000);
+            const quickWins = calculationData.filter(item => item.priority === 'Medium');
+            const avoid = calculationData.filter(item => item.priority === 'Low');
+            
+            document.getElementById('doFirstItems').textContent = doFirst.length > 0 ? doFirst.map(item => item.feature).join(', ') : 'None';
+            document.getElementById('planCarefullyItems').textContent = planCarefully.length > 0 ? planCarefully.map(item => item.feature).join(', ') : 'None';
+            document.getElementById('quickWinsItems').textContent = quickWins.length > 0 ? quickWins.map(item => item.feature).join(', ') : 'None';
+            document.getElementById('avoidItems').textContent = avoid.length > 0 ? avoid.map(item => item.feature).join(', ') : 'None';
+            
+            // Update revenue breakdown
+            const breakdown = calculationData.map(item => 
+                `<div style="margin: 10px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>${item.feature}</strong>: $${item.annualRevenue.toLocaleString()}/year 
+                    (${item.customers} customers × $${item.cost} × ${(item.conversion * 100).toFixed(0)}% conversion)
+                    <span style="color: #666; margin-left: 10px;">[${item.priority} Priority]</span>
+                </div>`
+            ).join('');
+            
+            document.getElementById('revenueBreakdown').innerHTML = breakdown;
+        }
+
+        function updateActionPlan() {
+            if (calculationData.length === 0) return;
+            
+            const highPriority = calculationData.filter(item => item.priority === 'High');
+            const mediumPriority = calculationData.filter(item => item.priority === 'Medium');
+            const lowPriority = calculationData.filter(item => item.priority === 'Low');
+            const totalRevenue = calculationData.reduce((sum, item) => sum + item.annualRevenue, 0);
+            
+            let actionPlanHTML = `
+                <div class="action-plan">
+                    <div style="background: #e8f5e8; padding: 20px; border-radius: 10px; margin-bottom: 25px; border-left: 5px solid #27ae60;">
+                        <h3>🎯 Your Customized Revenue Recovery Plan</h3>
+                        <p><strong>Total Opportunity:</strong> ${totalRevenue.toLocaleString()}/year</p>
+                        <p><strong>High Priority Items:</strong> ${highPriority.length}</p>
+                        <p><strong>Recommended Timeline:</strong> ${getRecommendedTimeline(calculationData.length)} months</p>
+                    </div>`;
+            
+            if (highPriority.length > 0) {
+                actionPlanHTML += `
+                    <div class="phase">
+                        <h4>🚨 Phase 1 (Month 1-2): High Priority Revenue Leaks</h4>
+                        <p style="margin-bottom: 15px; color: #c62828; font-weight: bold;">
+                            Potential: ${highPriority.reduce((sum, item) => sum + item.annualRevenue, 0).toLocaleString()}/year
+                        </p>
+                        <ul class="checklist">`;
+                
+                highPriority.forEach(item => {
+                    actionPlanHTML += `
+                        <li>Implement ${item.feature} enforcement - ${item.customers} customers × ${item.cost}/month = ${item.annualRevenue.toLocaleString()}/year opportunity</li>
+                        <li>Create communication plan for ${item.feature} customers explaining value proposition</li>`;
+                });
+                
+                actionPlanHTML += `
+                        <li>Set up billing system to handle ${highPriority.length > 1 ? 'multiple' : 'single'} overage scenarios</li>
+                        <li>Monitor conversion rates and customer feedback closely</li>
+                    </ul>
+                </div>`;
+            }
+            
+            if (mediumPriority.length > 0) {
+                actionPlanHTML += `
+                    <div class="phase">
+                        <h4>⚡ Phase 2 (Month 3-4): Medium Priority Opportunities</h4>
+                        <p style="margin-bottom: 15px; color: #f57c00; font-weight: bold;">
+                            Potential: ${mediumPriority.reduce((sum, item) => sum + item.annualRevenue, 0).toLocaleString()}/year
+                        </p>
+                        <ul class="checklist">`;
+                
+                mediumPriority.forEach(item => {
+                    actionPlanHTML += `
+                        <li>Roll out ${item.feature} restrictions after learning from Phase 1</li>
+                        <li>Optimize conversion approach based on ${item.feature} customer behavior</li>`;
+                });
+                
+                actionPlanHTML += `
+                        <li>Refine customer education and upgrade path presentations</li>
+                        <li>A/B test different messaging approaches</li>
+                    </ul>
+                </div>`;
+            }
+            
+            if (lowPriority.length > 0) {
+                actionPlanHTML += `
+                    <div class="phase">
+                        <h4>🎯 Phase 3 (Month 5-6): Low Priority & Long-term Strategy</h4>
+                        <p style="margin-bottom: 15px; color: #2e7d32; font-weight: bold;">
+                            Potential: ${lowPriority.reduce((sum, item) => sum + item.annualRevenue, 0).toLocaleString()}/year
+                        </p>
+                        <ul class="checklist">`;
+                
+                lowPriority.forEach(item => {
+                    actionPlanHTML += `
+                        <li>Consider ${item.feature} enforcement only if resource-efficient</li>`;
+                });
+                
+                actionPlanHTML += `
+                        <li>Document lessons learned and optimize pricing strategy</li>
+                        <li>Establish ongoing monitoring and optimization processes</li>
+                        <li>Plan next wave of monetization improvements</li>
+                    </ul>
+                </div>`;
+            }
+            
+            // Add specific recommendations based on data
+            actionPlanHTML += `
+                <div style="background: #fff3e0; padding: 20px; border-radius: 10px; border-left: 5px solid #f57c00;">
+                    <h3>💡 Personalized Recommendations</h3>
+                    ${getPersonalizedRecommendations(calculationData)}
+                </div>
+            </div>`;
+            
+            document.getElementById('dynamicActionPlan').innerHTML = actionPlanHTML;
+        }
+        
+        function getRecommendedTimeline(itemCount) {
+            if (itemCount <= 2) return 3;
+            if (itemCount <= 4) return 4;
+            return 6;
+        }
+        
+        function getPersonalizedRecommendations(data) {
+            let recommendations = [];
+            
+            const totalRevenue = data.reduce((sum, item) => sum + item.annualRevenue, 0);
+            const avgConversion = data.reduce((sum, item) => sum + item.conversion, 0) / data.length;
+            const highValueItems = data.filter(item => item.annualRevenue > 100000);
+            
+            if (totalRevenue > 500000) {
+                recommendations.push("🎯 <strong>High-Value Opportunity:</strong> With $" + totalRevenue.toLocaleString() + " potential, consider dedicating a project manager to oversee implementation.");
+            }
+            
+            if (avgConversion < 0.4) {
+                recommendations.push("📈 <strong>Conversion Focus:</strong> Your average conversion rate is " + (avgConversion * 100).toFixed(0) + "%. Focus on customer education and value communication before enforcement.");
+            }
+            
+            if (highValueItems.length > 0) {
+                recommendations.push("💰 <strong>Big Win Alert:</strong> You have " + highValueItems.length + " item(s) worth $100K+ annually. These should be your absolute priority.");
+            }
+            
+            const customerCounts = data.map(item => item.customers);
+            const maxCustomers = Math.max(...customerCounts);
+            if (maxCustomers > 50) {
+                recommendations.push("👥 <strong>Scale Consideration:</strong> With " + maxCustomers + " customers affected in one area, plan your rollout carefully to avoid support overwhelm.");
+            }
+            
+            if (data.length > 4) {
+                recommendations.push("🔄 <strong>Phased Approach:</strong> With " + data.length + " different revenue leaks, implement in phases to learn and optimize as you go.");
+            }
+            
+            return recommendations.length > 0 ? 
+                "<ul style='margin-left: 20px;'><li>" + recommendations.join("</li><li>") + "</li></ul>" :
+                "<p>Run the calculation with your specific data to get personalized recommendations.</p>";
+        }
+
+        function showCalculationResults() {
+            const resultsDiv = document.getElementById('calculationResults');
+            const contentDiv = document.getElementById('resultsContent');
+            
+            if (calculationData.length === 0) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+            
+            const totalMonthly = calculationData.reduce((sum, item) => sum + item.monthlyRevenue, 0);
+            const totalAnnual = calculationData.reduce((sum, item) => sum + item.annualRevenue, 0);
+            const highPriorityCount = calculationData.filter(item => item.priority === 'High').length;
+            
+            contentDiv.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #27ae60;">${totalMonthly.toLocaleString()}</div>
+                        <div style="color: #666;">Monthly Opportunity</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #27ae60;">${totalAnnual.toLocaleString()}</div>
+                        <div style="color: #666;">Annual Opportunity</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #e74c3c;">${highPriorityCount}</div>
+                        <div style="color: #666;">High Priority Items</div>
+                    </div>
+                </div>
+                <p style="color: #666; text-align: center;">
+                    ✅ Calculations complete! Check the Summary and Action Plan tabs for detailed insights.
+                </p>
+            `;
+            
+            resultsDiv.style.display = 'block';
         }
 
         function downloadExcel() {
-            alert('Excel file download would be triggered here. The actual implementation would generate and download a properly formatted Excel file with all the enhancements.');
+            alert('Excel download feature: This would generate a professionally formatted Excel file with your calculated data, formulas, and branded design. The file would include all tabs: Instructions, Calculator (with your data), Summary Dashboard, and Action Plan.');
         }
+
+        // Initialize with sample calculation on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-calculate with sample data after a brief delay
+            setTimeout(() => {
+                calculateAll();
+            }, 1000);
+        });
     </script>
 </body>
 </html>
